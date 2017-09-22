@@ -1,0 +1,15 @@
+{
+	"name": "bs-dataloader",
+	"description": "This is a rewrite in reasonml of https://github.com/facebook/dataloader/blob/master/src/index.js",
+	"version": "0.1.0",
+	"scripts": {
+		"clean": "bsb -clean-world",
+		"build": "bsb -make-world",
+		"watch": "bsb -make-world -w"
+	},
+	"keywords": [ "BuckleScript", "dataloader" ],
+	"license": "MIT",
+	"devDependencies": {
+		"bs-platform": "^1.9.2"
+	}
+}
