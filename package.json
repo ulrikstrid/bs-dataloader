@@ -5,11 +5,15 @@
 	"scripts": {
 		"clean": "bsb -clean-world",
 		"build": "bsb -make-world",
-		"watch": "bsb -make-world -w"
+		"watch": "bsb -make-world -w",
+		"test": "jest"
 	},
 	"keywords": [ "BuckleScript", "dataloader" ],
 	"license": "MIT",
 	"devDependencies": {
-		"bs-platform": "^1.9.2"
-	}
+		"bs-platform": "^1.9.2",
+		"bs-jest": "^0.1.0",
+		"jest": "^21.1.0"
+	},
+	"dependencies": {}
 }

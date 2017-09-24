@@ -14,12 +14,12 @@ module type Impl = {
   let options: options;
 };
 
-module Dataloader (Impl: Impl) => {
+module MakeDataloader (Impl: Impl) => {
   let shouldCache = Impl.options.cache;
   let shouldBatch = Impl.options.batch;
   let maxBatchSize = Impl.options.maxBatchSize;
   let batchLoadFun = Impl.batchLoadFun;
-  let promiseCache: Js.Dict.t (Js.Promise.t Impl.value) = Js.Dict.empty ();
+  let promiseCache: Hashtbl.t string (Js.Promise.t Impl.value) = Hashtbl.create 10;
   let queue = [||];
   let resolvedPromise = Js.Promise.resolve ();
   let enqueuePostPromiseJob fn => {
@@ -56,9 +56,13 @@ module Dataloader (Impl: Impl) => {
     let queueSize = Js.Array.length queue;
     let queueIsLarger = maxBatchSize < queueSize;
     let sliceTo = queueIsLarger ? maxBatchSize : queueSize;
-    dispatchQueueBatch (Js.Array.slice 0 sliceTo queue);
-    Js.Array.removeCountInPlace pos::0 count::sliceTo queue;
-    ()
+    dispatchQueueBatch (Js.Array.slice start::0 end_::sliceTo queue);
+    let _ = Js.Array.removeCountInPlace pos::0 count::sliceTo queue;
+    if (Js.Array.length queue > 0) {
+      dispatchQueue ()
+    } else {
+      ()
+    }
   };
   let doLoad key => {
     let promise =
@@ -67,9 +71,9 @@ module Dataloader (Impl: Impl) => {
           let _ = Js.Array.push (key, resolve, reject) queue;
           if (Js.Array.length queue == 1) {
             if shouldBatch {
-              {}
+              enqueuePostPromiseJob dispatchQueue
             } else {
-              {}
+              dispatchQueue ()
             };
             ()
           } else {
@@ -78,7 +82,7 @@ module Dataloader (Impl: Impl) => {
         }
       );
     if shouldCache {
-      Js.Dict.set promiseCache key promise;
+      Hashtbl.add promiseCache key promise;
       promise
     } else {
       promise
@@ -86,12 +90,21 @@ module Dataloader (Impl: Impl) => {
   };
   let load (key: string) =>
     if shouldCache {
-      let cachedResult = Js.Dict.get promiseCache key;
-      switch cachedResult {
-      | Some result => result
-      | None => doLoad key
+      if (Hashtbl.mem promiseCache key) {
+        Hashtbl.find promiseCache key
+      } else {
+        doLoad key
       }
     } else {
       doLoad key
+    };
+  let loadMany keys => Js.Promise.all (Js.Array.map load keys);
+  let clear key => Hashtbl.remove promiseCache key;
+  let clearAll () => Hashtbl.clear promiseCache;
+  let prime key value =>
+    if (Hashtbl.mem promiseCache key) {
+      Hashtbl.add promiseCache key (Js.Promise.resolve value)
+    } else {
+      ()
     };
 };
