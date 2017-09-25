@@ -103,8 +103,8 @@ module MakeDataloader (Impl: Impl) => {
   let clearAll () => Hashtbl.clear promiseCache;
   let prime key value =>
     if (Hashtbl.mem promiseCache key) {
-      Hashtbl.add promiseCache key (Js.Promise.resolve value)
-    } else {
       ()
+    } else {
+      Hashtbl.add promiseCache key (Js.Promise.resolve value)
     };
 };
