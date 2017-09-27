@@ -27,40 +27,58 @@ let enqueuePostPromiseJob fn => {
   ()
 };
 
+let firstNInQueueToArray queue numberOfValues => {
+  let queueLength = Queue.length queue;
+  let maxValues = queueLength > numberOfValues ? numberOfValues : queueLength;
+  Array.init maxValues (fun _ => Queue.pop queue)
+};
+
 module Make (Impl: Impl) => {
   let shouldCache = Impl.options.cache;
   let shouldBatch = Impl.options.batch;
   let maxBatchSize = Impl.options.maxBatchSize;
   let batchLoadFun = Impl.batchLoadFun;
   let promiseCache: Hashtbl.t string (Js.Promise.t Impl.value) = Hashtbl.create 10;
-  let queue = [||];
-  let dispatchQueueBatch queueSlice => {
-    let keys = Js.Array.map (fun (key, _, _) => key) queueSlice;
+  let queue:
+    Queue.t (string, Js.Internal.fn [ | `Arity_1 'a] unit, Js.Internal.fn [ | `Arity_1 exn] unit) =
+    Queue.create ();
+  let dispatchQueueBatch
+      (
+        queueSlice:
+          array (
+            string,
+            Js.Internal.fn [ | `Arity_1 'a] unit,
+            Js.Internal.fn [ | `Arity_1 exn] unit
+          )
+      ) => {
+    let keys = Array.map (fun (key, _, _) => key) queueSlice;
     let _ =
       batchLoadFun keys
       |> Js.Promise.then_ (
            fun values => {
              let _ =
                queueSlice
-               |> Js.Array.mapi (
-                    fun (key, resolve, reject) index => {
-                      let value = values.(index);
-                      (key, resolve, reject, value)
-                    }
-                  )
-               |> Js.Array.forEach (fun (_key, resolve, _reject, value) => resolve value);
+               |> Array.iteri (
+                    fun index
+                        (
+                          (key, resolve, reject): (
+                            string,
+                            Js.Internal.fn [ | `Arity_1 'a] unit,
+                            Js.Internal.fn [ | `Arity_1 exn] unit
+                          )
+                        ) =>
+                      resolve values.(index)
+                  );
              Js.Promise.resolve ()
            }
          );
     ()
   };
   let rec dispatchQueue () => {
-    let queueSize = Js.Array.length queue;
+    let queueSize = Queue.length queue;
     let queueIsLarger = maxBatchSize < queueSize;
-    if (Js.Array.length queue > 0) {
-      let sliceTo = queueIsLarger ? maxBatchSize : queueSize;
-      dispatchQueueBatch (Js.Array.slice start::0 end_::sliceTo queue);
-      let _ = Js.Array.removeCountInPlace pos::0 count::sliceTo queue;
+    if (queueSize > 0) {
+      dispatchQueueBatch (firstNInQueueToArray queue maxBatchSize);
       dispatchQueue ()
     } else {
       ()
@@ -73,8 +91,8 @@ module Make (Impl: Impl) => {
       let promise =
         Js.Promise.make (
           fun ::resolve ::reject => {
-            let _ = Js.Array.push (key, resolve, reject) queue;
-            if (Js.Array.length queue == 1) {
+            let _ = Queue.push (key, resolve, reject) queue;
+            if (Queue.length queue == 1) {
               if shouldBatch {
                 enqueuePostPromiseJob dispatchQueue
               } else {
@@ -93,7 +111,7 @@ module Make (Impl: Impl) => {
         promise
       }
     };
-  let loadMany keys => Js.Promise.all (Js.Array.map load keys);
+  let loadMany keys => Js.Promise.all (Array.map load keys);
   let clear key => Hashtbl.remove promiseCache key;
   let clearAll () => Hashtbl.clear promiseCache;
   let prime key value =>
