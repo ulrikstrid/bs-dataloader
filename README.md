@@ -11,7 +11,7 @@ module UserLoaderImpl = {
   let options: options = {batch: true, maxBatchSize: 256, cache: true};
 };
 
-module UserLoader = MakeDataloader UserLoaderImpl;
+module UserLoader = DataLoader.Make UserLoaderImpl;
 
 UserLoader.load "1"
 |> Js.Promise.then_ (
