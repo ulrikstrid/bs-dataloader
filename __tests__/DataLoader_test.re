@@ -63,7 +63,7 @@ describe
             module IdentityLoaderImpl = {
               type value = string;
               let batchLoadFun strings => {
-                Js.Array.push strings calls;
+                let _ = Js.Array.push strings calls;
                 Js.Promise.resolve strings
               };
               let options: DataLoader.options = {batch: true, maxBatchSize: 2, cache: true};
@@ -90,7 +90,7 @@ describe
             module IdentityLoaderImpl = {
               type value = string;
               let batchLoadFun strings => {
-                Js.Array.push strings calls;
+                let _ = Js.Array.push strings calls;
                 Js.Promise.resolve strings
               };
               let options: DataLoader.options = {batch: true, maxBatchSize: 2, cache: true};
@@ -120,7 +120,7 @@ describe
       module IdentityLoaderImpl = {
         type value = string;
         let batchLoadFun strings => {
-          Js.Array.push strings calls;
+          let _ = Js.Array.push strings calls;
           Js.Promise.resolve strings
         };
         let options: DataLoader.options = {batch: true, maxBatchSize: 2, cache: true};
@@ -170,7 +170,7 @@ describe
       module IdentityLoaderImpl = {
         type value = string;
         let batchLoadFun strings => {
-          Js.Array.push strings calls;
+          let _ = Js.Array.push strings calls;
           Js.Promise.resolve strings
         };
         let options: DataLoader.options = {batch: true, maxBatchSize: 2, cache: true};
@@ -221,7 +221,7 @@ describe
       module IdentityLoaderImpl = {
         type value = string;
         let batchLoadFun strings => {
-          Js.Array.push strings calls;
+          let _ = Js.Array.push strings calls;
           Js.Promise.resolve strings
         };
         let options: DataLoader.options = {batch: true, maxBatchSize: 2, cache: true};
@@ -276,7 +276,7 @@ describe
             module IdentityLoaderImpl = {
               type value = string;
               let batchLoadFun strings => {
-                Js.Array.push strings calls;
+                let _ = Js.Array.push strings calls;
                 Js.Promise.resolve strings
               };
               let options: DataLoader.options = {batch: true, maxBatchSize: 2, cache: true};

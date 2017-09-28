@@ -17,13 +17,14 @@ module type Impl = {
 let resolvedPromise = Js.Promise.resolve ();
 
 let enqueuePostPromiseJob fn => {
-  resolvedPromise
-  |> Js.Promise.then_ (
-       fun _ => {
-         let _ = Js.Global.setTimeout fn 1;
-         Js.Promise.resolve ()
-       }
-     );
+  let _ =
+    resolvedPromise
+    |> Js.Promise.then_ (
+         fun _ => {
+           let _ = Js.Global.setTimeout fn 1;
+           Js.Promise.resolve ()
+         }
+       );
   ()
 };
 
@@ -39,18 +40,8 @@ module Make (Impl: Impl) => {
   let maxBatchSize = Impl.options.maxBatchSize;
   let batchLoadFun = Impl.batchLoadFun;
   let promiseCache: Hashtbl.t string (Js.Promise.t Impl.value) = Hashtbl.create 10;
-  let queue:
-    Queue.t (string, Js.Internal.fn [ | `Arity_1 'a] unit, Js.Internal.fn [ | `Arity_1 exn] unit) =
-    Queue.create ();
-  let dispatchQueueBatch
-      (
-        queueSlice:
-          array (
-            string,
-            Js.Internal.fn [ | `Arity_1 'a] unit,
-            Js.Internal.fn [ | `Arity_1 exn] unit
-          )
-      ) => {
+  let queue = Queue.create ();
+  let dispatchQueueBatch queueSlice => {
     let keys = Array.map (fun (key, _, _) => key) queueSlice;
     let _ =
       batchLoadFun keys
@@ -58,32 +49,20 @@ module Make (Impl: Impl) => {
            fun values => {
              let _ =
                queueSlice
-               |> Array.iteri (
-                    fun index
-                        (
-                          (key, resolve, reject): (
-                            string,
-                            Js.Internal.fn [ | `Arity_1 'a] unit,
-                            Js.Internal.fn [ | `Arity_1 exn] unit
-                          )
-                        ) =>
-                      resolve values.(index)
-                  );
+               |> Array.iteri (fun index (_key, resolve, _reject) => resolve values.(index) [@bs]);
              Js.Promise.resolve ()
            }
          );
     ()
   };
-  let rec dispatchQueue () => {
-    let queueSize = Queue.length queue;
-    let queueIsLarger = maxBatchSize < queueSize;
-    if (queueSize > 0) {
+  let rec dispatchQueue () =>
+    if (Queue.is_empty queue == false) {
       dispatchQueueBatch (firstNInQueueToArray queue maxBatchSize);
       dispatchQueue ()
     } else {
       ()
-    }
-  };
+    };
+  let addToQueue item => Queue.push item queue;
   let load (key: string) =>
     if (shouldCache && Hashtbl.mem promiseCache key) {
       Hashtbl.find promiseCache key
@@ -91,7 +70,7 @@ module Make (Impl: Impl) => {
       let promise =
         Js.Promise.make (
           fun ::resolve ::reject => {
-            let _ = Queue.push (key, resolve, reject) queue;
+            let _ = addToQueue (key, resolve, reject);
             if (Queue.length queue == 1) {
               if shouldBatch {
                 enqueuePostPromiseJob dispatchQueue
