@@ -5,12 +5,13 @@ type options = {
 };
 
 module type Impl = {
+  type key;
   type value;
   /*
    * A Function, which when given an Array of keys, returns a Promise of an Array
    * of values or Errors.
    */
-  let batchLoadFun: array string => Js.Promise.t (array value);
+  let batchLoadFun: array key => Js.Promise.t (array value);
   let options: options;
 };
 
@@ -39,7 +40,7 @@ module Make (Impl: Impl) => {
   let shouldBatch = Impl.options.batch;
   let maxBatchSize = Impl.options.maxBatchSize;
   let batchLoadFun = Impl.batchLoadFun;
-  let promiseCache: Hashtbl.t string (Js.Promise.t Impl.value) = Hashtbl.create 10;
+  let promiseCache: Hashtbl.t Impl.key (Js.Promise.t Impl.value) = Hashtbl.create 10;
   let queue = Queue.create ();
   let dispatchQueueBatch queueSlice => {
     let keys = Array.map (fun (key, _, _) => key) queueSlice;
@@ -63,7 +64,7 @@ module Make (Impl: Impl) => {
       ()
     };
   let addToQueue item => Queue.push item queue;
-  let load (key: string) =>
+  let load (key: Impl.key) =>
     if (shouldCache && Hashtbl.mem promiseCache key) {
       Hashtbl.find promiseCache key
     } else {
