@@ -4,6 +4,10 @@ type options = {
   cache: bool
 };
 
+type valueOrExn 'a =
+  | Value 'a
+  | Err exn;
+
 module type Impl = {
   type key;
   type value;
@@ -11,7 +15,7 @@ module type Impl = {
    * A Function, which when given an Array of keys, returns a Promise of an Array
    * of values or Errors.
    */
-  let batchLoadFun: array key => Js.Promise.t (array value);
+  let batchLoadFun: array key => Js.Promise.t (array (valueOrExn value));
   let options: options;
 };
 
@@ -42,6 +46,14 @@ module Make (Impl: Impl) => {
   let batchLoadFun = Impl.batchLoadFun;
   let promiseCache: Hashtbl.t Impl.key (Js.Promise.t Impl.value) = Hashtbl.create 10;
   let queue = Queue.create ();
+  let clear key => Hashtbl.remove promiseCache key;
+  let clearAll () => Hashtbl.clear promiseCache;
+  let prime key value =>
+    if (Hashtbl.mem promiseCache key) {
+      ()
+    } else {
+      Hashtbl.add promiseCache key (Js.Promise.resolve value)
+    };
   let dispatchQueueBatch queueSlice => {
     let keys = Array.map (fun (key, _, _) => key) queueSlice;
     let _ =
@@ -50,7 +62,15 @@ module Make (Impl: Impl) => {
            fun values => {
              let _ =
                queueSlice
-               |> Array.iteri (fun index (_key, resolve, _reject) => resolve values.(index) [@bs]);
+               |> Array.iteri (
+                    fun index (key, resolve, reject) =>
+                      switch values.(index) {
+                      | Value value => resolve value [@bs]
+                      | Err err =>
+                        clear key;
+                        reject err [@bs]
+                      }
+                  );
              Js.Promise.resolve ()
            }
          );
@@ -92,12 +112,4 @@ module Make (Impl: Impl) => {
       }
     };
   let loadMany keys => Js.Promise.all (Array.map load keys);
-  let clear key => Hashtbl.remove promiseCache key;
-  let clearAll () => Hashtbl.clear promiseCache;
-  let prime key value =>
-    if (Hashtbl.mem promiseCache key) {
-      ()
-    } else {
-      Hashtbl.add promiseCache key (Js.Promise.resolve value)
-    };
 };

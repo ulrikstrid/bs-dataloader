@@ -6,16 +6,17 @@ describe
     fun () => {
       open Expect;
       open! Expect.Operators;
+      module IdentityLoaderImpl = {
+        type value = string;
+        type key = string;
+        let batchLoadFun strings =>
+          Js.Promise.resolve (Array.map (fun string => DataLoader.Value string) strings);
+        let options: DataLoader.options = {batch: false, maxBatchSize: 256, cache: true};
+      };
       testPromise
         "it builds a really simple data loader"
         (
           fun () => {
-            module IdentityLoaderImpl = {
-              type value = string;
-              type key = string;
-              let batchLoadFun strings => Js.Promise.resolve strings;
-              let options: DataLoader.options = {batch: false, maxBatchSize: 256, cache: true};
-            };
             module IdentityLoader = DataLoader.Make IdentityLoaderImpl;
             IdentityLoader.load "1"
             |> Js.Promise.then_ (
@@ -27,12 +28,6 @@ describe
         "it supports loading multiple keys in one call"
         (
           fun () => {
-            module IdentityLoaderImpl = {
-              type value = string;
-              type key = string;
-              let batchLoadFun strings => Js.Promise.resolve strings;
-              let options: DataLoader.options = {batch: true, maxBatchSize: 256, cache: true};
-            };
             module IdentityLoader = DataLoader.Make IdentityLoaderImpl;
             IdentityLoader.loadMany [|"1", "2"|]
             |> Js.Promise.then_ (
@@ -44,12 +39,6 @@ describe
         "it batches multiple requests"
         (
           fun () => {
-            module IdentityLoaderImpl = {
-              type value = string;
-              type key = string;
-              let batchLoadFun strings => Js.Promise.resolve strings;
-              let options: DataLoader.options = {batch: false, maxBatchSize: 256, cache: true};
-            };
             module IdentityLoader = DataLoader.Make IdentityLoaderImpl;
             Js.Promise.all [|IdentityLoader.load "1", IdentityLoader.load "2"|]
             |> Js.Promise.then_ (
@@ -63,16 +52,16 @@ describe
         (
           fun () => {
             let calls = [||];
-            module IdentityLoaderImpl = {
+            module IdentityLoaderBatchImpl = {
               type value = string;
               type key = string;
               let batchLoadFun strings => {
                 let _ = Js.Array.push strings calls;
-                Js.Promise.resolve strings
+                Js.Promise.resolve (Array.map (fun string => DataLoader.Value string) strings)
               };
               let options: DataLoader.options = {batch: true, maxBatchSize: 2, cache: true};
             };
-            module IdentityLoader = DataLoader.Make IdentityLoaderImpl;
+            module IdentityLoader = DataLoader.Make IdentityLoaderBatchImpl;
             let load1 = IdentityLoader.load "1";
             let load2 = IdentityLoader.load "2";
             let load3 = IdentityLoader.load "3";
@@ -91,16 +80,16 @@ describe
         (
           fun () => {
             let calls = [||];
-            module IdentityLoaderImpl = {
+            module IdentityLoaderBatchImpl = {
               type value = string;
               type key = string;
               let batchLoadFun strings => {
                 let _ = Js.Array.push strings calls;
-                Js.Promise.resolve strings
+                Js.Promise.resolve (Array.map (fun string => DataLoader.Value string) strings)
               };
               let options: DataLoader.options = {batch: true, maxBatchSize: 2, cache: true};
             };
-            module IdentityLoader = DataLoader.Make IdentityLoaderImpl;
+            module IdentityLoader = DataLoader.Make IdentityLoaderBatchImpl;
             let promise1a = IdentityLoader.load "1";
             let promise1b = IdentityLoader.load "1";
             Js.Promise.all [|promise1a, promise1b|]
@@ -122,16 +111,16 @@ describe
       open Expect;
       open! Expect.Operators;
       let calls = [||];
-      module IdentityLoaderImpl = {
+      module IdentityLoaderBatchImpl = {
         type value = string;
         type key = string;
         let batchLoadFun strings => {
           let _ = Js.Array.push strings calls;
-          Js.Promise.resolve strings
+          Js.Promise.resolve (Array.map (fun string => DataLoader.Value string) strings)
         };
         let options: DataLoader.options = {batch: true, maxBatchSize: 2, cache: true};
       };
-      module IdentityLoader = DataLoader.Make IdentityLoaderImpl;
+      module IdentityLoader = DataLoader.Make IdentityLoaderBatchImpl;
       testPromise
         "initial call"
         (
@@ -178,7 +167,7 @@ describe
         type key = string;
         let batchLoadFun strings => {
           let _ = Js.Array.push strings calls;
-          Js.Promise.resolve strings
+          Js.Promise.resolve (Array.map (fun string => DataLoader.Value string) strings)
         };
         let options: DataLoader.options = {batch: true, maxBatchSize: 2, cache: true};
       };
@@ -230,7 +219,7 @@ describe
         type key = string;
         let batchLoadFun strings => {
           let _ = Js.Array.push strings calls;
-          Js.Promise.resolve strings
+          Js.Promise.resolve (Array.map (fun string => DataLoader.Value string) strings)
         };
         let options: DataLoader.options = {batch: true, maxBatchSize: 2, cache: true};
       };
@@ -286,7 +275,7 @@ describe
               type key = string;
               let batchLoadFun strings => {
                 let _ = Js.Array.push strings calls;
-                Js.Promise.resolve strings
+                Js.Promise.resolve (Array.map (fun string => DataLoader.Value string) strings)
               };
               let options: DataLoader.options = {batch: true, maxBatchSize: 2, cache: true};
             };
@@ -310,8 +299,9 @@ describe
             module IdentityLoaderImpl = {
               type value = string;
               type key = string;
-              let batchLoadFun strings => Js.Promise.resolve strings;
-              let options: DataLoader.options = {batch: true, maxBatchSize: 2, cache: true};
+              let batchLoadFun strings =>
+                Js.Promise.resolve (Array.map (fun string => DataLoader.Value string) strings);
+              let options: DataLoader.options = {batch: false, maxBatchSize: 256, cache: true};
             };
             module IdentityLoader = DataLoader.Make IdentityLoaderImpl;
             IdentityLoader.prime "1" "A";
@@ -337,8 +327,9 @@ describe
       module IdentityLoaderImpl = {
         type value = string;
         type key = string;
-        let batchLoadFun strings => Js.Promise.resolve strings;
-        let options: DataLoader.options = {batch: true, maxBatchSize: 2, cache: true};
+        let batchLoadFun strings =>
+          Js.Promise.resolve (Array.map (fun string => DataLoader.Value string) strings);
+        let options: DataLoader.options = {batch: false, maxBatchSize: 256, cache: true};
       };
       module IdentityLoader = DataLoader.Make IdentityLoaderImpl;
       testPromise
