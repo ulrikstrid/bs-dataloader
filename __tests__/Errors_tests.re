@@ -13,8 +13,8 @@ describe
               (
                 fun stringIdentity =>
                   stringIdentity == "2" ?
-                    Js.Promise.resolve (DataLoader.Err Not_found) :
-                    Js.Promise.resolve (DataLoader.Value stringIdentity)
+                    Js.Promise.resolve (Js.Result.Error Not_found) :
+                    Js.Promise.resolve (Js.Result.Ok stringIdentity)
               )
               strings;
           Js.Promise.all promises
@@ -55,8 +55,8 @@ describe
               (
                 fun stringIdentity =>
                   !calls == 1 ?
-                    Js.Promise.resolve (DataLoader.Err Not_found) :
-                    Js.Promise.resolve (DataLoader.Value stringIdentity)
+                    Js.Promise.resolve (Js.Result.Error Not_found) :
+                    Js.Promise.resolve (Js.Result.Ok stringIdentity)
               )
               strings;
           calls := !calls + 1;

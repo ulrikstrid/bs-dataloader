@@ -10,7 +10,7 @@ describe
         type value = string;
         type key = string;
         let batchLoadFun strings =>
-          Js.Promise.resolve (Array.map (fun string => DataLoader.Value string) strings);
+          Js.Promise.resolve (Array.map (fun string => Js.Result.Ok string) strings);
         let options: DataLoader.options = {batch: false, maxBatchSize: 256, cache: true};
       };
       testPromise
@@ -57,7 +57,7 @@ describe
               type key = string;
               let batchLoadFun strings => {
                 let _ = Js.Array.push strings calls;
-                Js.Promise.resolve (Array.map (fun string => DataLoader.Value string) strings)
+                Js.Promise.resolve (Array.map (fun string => Js.Result.Ok string) strings)
               };
               let options: DataLoader.options = {batch: true, maxBatchSize: 2, cache: true};
             };
@@ -85,7 +85,7 @@ describe
               type key = string;
               let batchLoadFun strings => {
                 let _ = Js.Array.push strings calls;
-                Js.Promise.resolve (Array.map (fun string => DataLoader.Value string) strings)
+                Js.Promise.resolve (Array.map (fun string => Js.Result.Ok string) strings)
               };
               let options: DataLoader.options = {batch: true, maxBatchSize: 2, cache: true};
             };
@@ -116,7 +116,7 @@ describe
         type key = string;
         let batchLoadFun strings => {
           let _ = Js.Array.push strings calls;
-          Js.Promise.resolve (Array.map (fun string => DataLoader.Value string) strings)
+          Js.Promise.resolve (Array.map (fun string => Js.Result.Ok string) strings)
         };
         let options: DataLoader.options = {batch: true, maxBatchSize: 2, cache: true};
       };
@@ -167,7 +167,7 @@ describe
         type key = string;
         let batchLoadFun strings => {
           let _ = Js.Array.push strings calls;
-          Js.Promise.resolve (Array.map (fun string => DataLoader.Value string) strings)
+          Js.Promise.resolve (Array.map (fun string => Js.Result.Ok string) strings)
         };
         let options: DataLoader.options = {batch: true, maxBatchSize: 2, cache: true};
       };
@@ -219,7 +219,7 @@ describe
         type key = string;
         let batchLoadFun strings => {
           let _ = Js.Array.push strings calls;
-          Js.Promise.resolve (Array.map (fun string => DataLoader.Value string) strings)
+          Js.Promise.resolve (Array.map (fun string => Js.Result.Ok string) strings)
         };
         let options: DataLoader.options = {batch: true, maxBatchSize: 2, cache: true};
       };
@@ -275,7 +275,7 @@ describe
               type key = string;
               let batchLoadFun strings => {
                 let _ = Js.Array.push strings calls;
-                Js.Promise.resolve (Array.map (fun string => DataLoader.Value string) strings)
+                Js.Promise.resolve (Array.map (fun string => Js.Result.Ok string) strings)
               };
               let options: DataLoader.options = {batch: true, maxBatchSize: 2, cache: true};
             };
@@ -300,7 +300,7 @@ describe
               type value = string;
               type key = string;
               let batchLoadFun strings =>
-                Js.Promise.resolve (Array.map (fun string => DataLoader.Value string) strings);
+                Js.Promise.resolve (Array.map (fun string => Js.Result.Ok string) strings);
               let options: DataLoader.options = {batch: false, maxBatchSize: 256, cache: true};
             };
             module IdentityLoader = DataLoader.Make IdentityLoaderImpl;
@@ -328,7 +328,7 @@ describe
         type value = string;
         type key = string;
         let batchLoadFun strings =>
-          Js.Promise.resolve (Array.map (fun string => DataLoader.Value string) strings);
+          Js.Promise.resolve (Array.map (fun string => Js.Result.Ok string) strings);
         let options: DataLoader.options = {batch: false, maxBatchSize: 256, cache: true};
       };
       module IdentityLoader = DataLoader.Make IdentityLoaderImpl;

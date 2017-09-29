@@ -4,10 +4,6 @@ type options = {
   cache: bool
 };
 
-type valueOrExn 'a =
-  | Value 'a
-  | Err exn;
-
 module type Impl = {
   type key;
   type value;
@@ -15,7 +11,7 @@ module type Impl = {
    * A Function, which when given an Array of keys, returns a Promise of an Array
    * of values or Errors.
    */
-  let batchLoadFun: array key => Js.Promise.t (array (valueOrExn value));
+  let batchLoadFun: array key => Js.Promise.t (array (Js.Result.t value 'error));
   let options: options;
 };
 
@@ -65,8 +61,8 @@ module Make (Impl: Impl) => {
                |> Array.iteri (
                     fun index (key, resolve, reject) =>
                       switch values.(index) {
-                      | Value value => resolve value [@bs]
-                      | Err err =>
+                      | Js.Result.Ok value => resolve value [@bs]
+                      | Js.Result.Error err =>
                         clear key;
                         reject err [@bs]
                       }
