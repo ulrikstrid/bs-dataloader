@@ -11,7 +11,7 @@ module type Impl = {
    * A Function, which when given an Array of keys, returns a Promise of an Array
    * of values or Errors.
    */
-  let batchLoadFun: array key => Js.Promise.t (array (Js.Result.t value 'error));
+  let batchLoadFun: array key => Js.Promise.t (array (Js.Result.t value exn));
   let options: options;
 };
 
