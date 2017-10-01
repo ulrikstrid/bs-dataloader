@@ -8,7 +8,7 @@ This is a rewrite of [dataloader js lib](https://github.com/facebook/dataloader)
 module UserLoaderImpl = {
   type value = user;
   type key = userId;
-  /* The batchLoadFun needs to wrap the returned values in DataLoader valueOrExn so that we can reject each promise instead of all */
+  /* The batchLoadFun needs to wrap the returned values in Js.Result.t so that we can reject each promise instead of all */
   let batchLoadFun userIds => batchGetUsers userIds;
   let options: options = {batch: true, maxBatchSize: 256, cache: true};
 };
