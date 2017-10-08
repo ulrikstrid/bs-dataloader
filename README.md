@@ -1,5 +1,7 @@
 # bs-dataloader
 
+[![CircleCI](https://circleci.com/gh/ulrikstrid/bs-dataloader.svg?style=svg)](https://circleci.com/gh/ulrikstrid/bs-dataloader)
+
 This is a rewrite of [dataloader js lib](https://github.com/facebook/dataloader) in reasonml for use with BuckleScript. I have a goal to make it work with native OCaml in the future but I still rely on some JavaScript structures.
 
 ## Usage
