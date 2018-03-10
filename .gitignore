@@ -24,6 +24,5 @@ lib/bs
 .vscode
 .merlin
 node_modules
-lib
 
 package-lock.json
