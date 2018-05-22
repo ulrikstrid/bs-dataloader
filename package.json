@@ -1,8 +1,7 @@
 {
   "name": "bs-dataloader",
-  "description":
-    "This is a rewrite in reasonml of https://github.com/facebook/dataloader/blob/master/src/index.js",
-  "version": "0.3.1",
+  "description": "This is a rewrite in reasonml of https://github.com/facebook/dataloader/blob/master/src/index.js",
+  "version": "1.0.0",
   "scripts": {
     "clean": "bsb -clean-world",
     "build": "bsb -make-world",
@@ -13,11 +12,14 @@
     "type": "git",
     "url": "https://github.com/ulrikstrid/bs-dataloader.git"
   },
-  "keywords": ["BuckleScript", "dataloader"],
+  "keywords": [
+    "BuckleScript",
+    "dataloader"
+  ],
   "license": "MIT",
   "devDependencies": {
-    "bs-jest": "^0.3.2",
-    "bs-platform": "^2.2.0",
+    "@glennsl/bs-jest": "^0.4.2",
+    "bs-platform": "^3.1.3",
     "jest": "^22.4.0"
   },
   "dependencies": {}

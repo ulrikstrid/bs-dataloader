@@ -13,7 +13,7 @@
       "type": "dev"
     }
   ],
-  "bs-dependencies" : [],
-  "bs-dev-dependencies": ["bs-jest"],
+  "bs-dependencies": [],
+  "bs-dev-dependencies": ["@glennsl/bs-jest"],
   "refmt": 3
 }
