@@ -8,7 +8,7 @@ describe("Primary API", () => {
     type key = string;
     let batchLoadFun = strings =>
       Js.Promise.resolve(
-        Array.map(string => Js.Result.Ok(string), strings),
+        Array.map(string => Belt.Result.Ok(string), strings),
       );
     let options: DataLoader.options = {
       batch: false,
@@ -45,7 +45,7 @@ describe("Primary API", () => {
       let batchLoadFun = strings => {
         let _ = Js.Array.push(strings, calls);
         Js.Promise.resolve(
-          Array.map(string => Js.Result.Ok(string), strings),
+          Array.map(string => Belt.Result.Ok(string), strings),
         );
       };
       let options: DataLoader.options = {
@@ -74,7 +74,7 @@ describe("Primary API", () => {
       let batchLoadFun = strings => {
         let _ = Js.Array.push(strings, calls);
         Js.Promise.resolve(
-          Array.map(string => Js.Result.Ok(string), strings),
+          Array.map(string => Belt.Result.Ok(string), strings),
         );
       };
       let options: DataLoader.options = {
@@ -106,7 +106,7 @@ describe("caches repeated requests", () => {
     let batchLoadFun = strings => {
       let _ = Js.Array.push(strings, calls);
       Js.Promise.resolve(
-        Array.map(string => Js.Result.Ok(string), strings),
+        Array.map(string => Belt.Result.Ok(string), strings),
       );
     };
     let options: DataLoader.options = {
@@ -150,7 +150,7 @@ describe("clear single value", () => {
     let batchLoadFun = strings => {
       let _ = Js.Array.push(strings, calls);
       Js.Promise.resolve(
-        Array.map(string => Js.Result.Ok(string), strings),
+        Array.map(string => Belt.Result.Ok(string), strings),
       );
     };
     let options: DataLoader.options = {
@@ -195,7 +195,7 @@ describe("clear all values", () => {
     let batchLoadFun = strings => {
       let _ = Js.Array.push(strings, calls);
       Js.Promise.resolve(
-        Array.map(string => Js.Result.Ok(string), strings),
+        Array.map(string => Belt.Result.Ok(string), strings),
       );
     };
     let options: DataLoader.options = {
@@ -241,7 +241,7 @@ describe("Priming the cache", () => {
       let batchLoadFun = strings => {
         let _ = Js.Array.push(strings, calls);
         Js.Promise.resolve(
-          Array.map(string => Js.Result.Ok(string), strings),
+          Array.map(string => Belt.Result.Ok(string), strings),
         );
       };
       let options: DataLoader.options = {
@@ -268,7 +268,7 @@ describe("Priming the cache", () => {
       type key = string;
       let batchLoadFun = strings =>
         Js.Promise.resolve(
-          Array.map(string => Js.Result.Ok(string), strings),
+          Array.map(string => Belt.Result.Ok(string), strings),
         );
       let options: DataLoader.options = {
         batch: false,
@@ -296,7 +296,7 @@ describe("Priming the cache by force", () => {
     type key = string;
     let batchLoadFun = strings =>
       Js.Promise.resolve(
-        Array.map(string => Js.Result.Ok(string), strings),
+        Array.map(string => Belt.Result.Ok(string), strings),
       );
     let options: DataLoader.options = {
       batch: false,

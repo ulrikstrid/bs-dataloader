@@ -9,8 +9,8 @@ describe("Can handle errors", () => {
         Array.map(
           stringIdentity =>
             stringIdentity == "2" ?
-              Js.Promise.resolve(Js.Result.Error(Not_found)) :
-              Js.Promise.resolve(Js.Result.Ok(stringIdentity)),
+              Js.Promise.resolve(Belt.Result.Error(Not_found)) :
+              Js.Promise.resolve(Belt.Result.Ok(stringIdentity)),
           strings,
         );
       Js.Promise.all(promises);
@@ -48,8 +48,8 @@ describe("Does not cache errors", () => {
         Array.map(
           stringIdentity =>
             calls^ == 1 ?
-              Js.Promise.resolve(Js.Result.Error(Not_found)) :
-              Js.Promise.resolve(Js.Result.Ok(stringIdentity)),
+              Js.Promise.resolve(Belt.Result.Error(Not_found)) :
+              Js.Promise.resolve(Belt.Result.Ok(stringIdentity)),
           strings,
         );
       calls := calls^ + 1;

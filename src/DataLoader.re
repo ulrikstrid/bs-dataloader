@@ -12,7 +12,7 @@ module type Impl = {
    * of values or Errors.
    */
   let batchLoadFun:
-    array(key) => Js.Promise.t(array(Js.Result.t(value, exn)));
+    array(key) => Js.Promise.t(array(Belt.Result.t(value, exn)));
   let options: options;
 };
 
@@ -21,17 +21,20 @@ let resolvedPromise = Js.Promise.resolve();
 let enqueuePostPromiseJob = fn => {
   let _ =
     resolvedPromise
-    |> Js.Promise.then_((_) => {
-         let _ = Js.Global.setTimeout(fn, 1);
-         Js.Promise.resolve();
-       });
+    |. Js.Promise.then_(
+         (_) => {
+           let _ = Js.Global.setTimeout(fn, 1);
+           Js.Promise.resolve();
+         },
+         _,
+       );
   ();
 };
 
 let firstNInQueueToArray = (queue, numberOfValues) => {
   let queueLength = Queue.length(queue);
   let maxValues = queueLength > numberOfValues ? numberOfValues : queueLength;
-  Array.init(maxValues, (_) => Queue.pop(queue));
+  Belt.Array.makeBy(maxValues, (_) => Queue.pop(queue));
 };
 
 module Make = (Impl: Impl) => {
@@ -51,22 +54,25 @@ module Make = (Impl: Impl) => {
       Hashtbl.add(promiseCache, key, Js.Promise.resolve(value));
     };
   let dispatchQueueBatch = queueSlice => {
-    let keys = Array.map(((key, _, _)) => key, queueSlice);
-    let _ =
-      batchLoadFun(keys)
-      |> Js.Promise.then_(values => {
-           let _ =
-             queueSlice
-             |> Array.iteri((index, (key, resolve, reject)) =>
-                  switch (values[index]) {
-                  | Js.Result.Ok(value) => resolve(. value)
-                  | Js.Result.Error(err) =>
-                    clear(key);
-                    reject(. err);
-                  }
-                );
+    let keys = Belt.Array.map(queueSlice, ((key, _, _)) => key);
+    batchLoadFun(keys)
+    |. Js.Promise.then_(
+         values => {
+           queueSlice
+           |. Belt.Array.forEachWithIndex((index, (key, resolve, reject)) =>
+                switch (values[index]) {
+                | Belt.Result.Ok(value) => resolve(. value)
+                | Belt.Result.Error(err) =>
+                  clear(key);
+                  reject(. err);
+                }
+              )
+           |. ignore;
            Js.Promise.resolve();
-         });
+         },
+         _,
+       )
+    |. ignore;
     ();
   };
   let rec dispatchQueue = () =>
@@ -102,5 +108,5 @@ module Make = (Impl: Impl) => {
         promise;
       };
     };
-  let loadMany = keys => Js.Promise.all(Array.map(load, keys));
+  let loadMany = keys => Js.Promise.all(Belt.Array.map(keys, load));
 };
