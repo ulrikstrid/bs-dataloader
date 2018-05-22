@@ -32,9 +32,9 @@ let enqueuePostPromiseJob = fn => {
 };
 
 let firstNInQueueToArray = (queue, numberOfValues) => {
-  let queueLength = Queue.length(queue);
+  let queueLength = Belt.MutableQueue.size(queue);
   let maxValues = queueLength > numberOfValues ? numberOfValues : queueLength;
-  Belt.Array.makeBy(maxValues, (_) => Queue.pop(queue));
+  Belt.Array.makeBy(maxValues, (_) => Belt.MutableQueue.popExn(queue));
 };
 
 module Make = (Impl: Impl) => {
@@ -44,7 +44,7 @@ module Make = (Impl: Impl) => {
   let batchLoadFun = Impl.batchLoadFun;
   let promiseCache: Hashtbl.t(Impl.key, Js.Promise.t(Impl.value)) =
     Hashtbl.create(10);
-  let queue = Queue.create();
+  let queue = Belt.MutableQueue.make();
   let clear = key => Hashtbl.remove(promiseCache, key);
   let clearAll = () => Hashtbl.clear(promiseCache);
   let prime = (key, value) =>
@@ -76,13 +76,13 @@ module Make = (Impl: Impl) => {
     ();
   };
   let rec dispatchQueue = () =>
-    if (Queue.is_empty(queue) == false) {
+    if (Belt.MutableQueue.isEmpty(queue) == false) {
       dispatchQueueBatch(firstNInQueueToArray(queue, maxBatchSize));
       dispatchQueue();
     } else {
       ();
     };
-  let addToQueue = item => Queue.push(item, queue);
+  let addToQueue = item => Belt.MutableQueue.add(queue, item);
   let load = (key: Impl.key) =>
     if (shouldCache && Hashtbl.mem(promiseCache, key)) {
       Hashtbl.find(promiseCache, key);
@@ -90,7 +90,7 @@ module Make = (Impl: Impl) => {
       let promise =
         Js.Promise.make((~resolve, ~reject) => {
           let _ = addToQueue((key, resolve, reject));
-          if (Queue.length(queue) == 1) {
+          if (Belt.MutableQueue.size(queue) == 1) {
             if (shouldBatch) {
               enqueuePostPromiseJob(dispatchQueue);
             } else {
