@@ -7,7 +7,7 @@ jobs:
   build:
     docker:
       # specify the version you desire here
-      - image: circleci/node:7.10
+      - image: circleci/node:10.0
       
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images
@@ -39,4 +39,13 @@ jobs:
       # run tests!
       - run: yarn test
 
+      - run:
+          name: "Add NPM token"
+          command: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
 
+      - deploy:
+          name: "Publish to npm"
+          command: |
+            if [ "${CIRCLE_BRANCH}" == "master" ]; then
+              npm publish
+            fi
