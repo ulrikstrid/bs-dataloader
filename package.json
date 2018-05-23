@@ -2,7 +2,7 @@
   "name": "bs-dataloader",
   "description":
     "This is a rewrite in reasonml of https://github.com/facebook/dataloader/blob/master/src/index.js",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "scripts": {
     "clean": "bsb -clean-world",
     "build": "bsb -make-world",
